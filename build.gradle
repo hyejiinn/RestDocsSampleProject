@@ -63,8 +63,13 @@ asciidoctor { // asciidoctor 작업을 구성
 
 bootJar {
 	dependsOn asciidoctor // test -> asciidoctor -> bootJar
-	copy {
-		from asciidoctor.outputDir
-		into 'src/main/resources/static/docs'
+
+	String activeProfile = System.properties['spring.profiles.active']
+	if(activeProfile != "real") {
+		copy {
+			from asciidoctor.outputDir
+			into 'src/main/resources/static/docs'
+		}
 	}
 }
+
