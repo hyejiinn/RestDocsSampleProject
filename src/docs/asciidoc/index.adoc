@@ -11,6 +11,8 @@
 === 요청
 include::{snippets}/post-write/http-request.adoc[]
 
+include::{snippets}/post-write/request-fields.adoc[]
+
 === 응답
 include::{snippets}/post-write/http-response.adoc[]
 

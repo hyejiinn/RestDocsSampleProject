@@ -13,7 +13,6 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -58,7 +57,7 @@ public class PostControllerDocsTest extends RestDocsSupport
 														 RestDocsUtils.getDocumentRequest(),
 														 RestDocsUtils.getDocumentResponse(),
 														 PayloadDocumentation.requestFields( // 요청 데이터 스펙
-																PayloadDocumentation.fieldWithPath("title").description("post 제목"),
+																PayloadDocumentation.fieldWithPath("title").description("post 제목").optional(),
 																PayloadDocumentation.fieldWithPath("content").description("post 내용")
 														 ),
 														 PayloadDocumentation.responseFields( // 응답 데이터 스펙
@@ -126,7 +125,7 @@ public class PostControllerDocsTest extends RestDocsSupport
 																 RequestDocumentation.parameterWithName("postId").description("post Id")
 														 ),
 														 PayloadDocumentation.requestFields(
-															PayloadDocumentation.fieldWithPath("title").type(JsonFieldType.STRING).description("post 제목"),
+															PayloadDocumentation.fieldWithPath("title").type(JsonFieldType.STRING).description("post 제목").optional(),
 															PayloadDocumentation.fieldWithPath("content").type(JsonFieldType.STRING).description("post 내용")
 														 ),
 														 PayloadDocumentation.responseFields(
