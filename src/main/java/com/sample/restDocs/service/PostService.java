@@ -1,8 +1,10 @@
 package com.sample.restDocs.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sample.restDocs.controller.request.PostCreateRequest;
+import com.sample.restDocs.controller.request.PostEditRequest;
 import com.sample.restDocs.repository.PostRepository;
 import com.sample.restDocs.service.response.PostResponse;
 import com.sample.restDocs.vo.Post;
@@ -31,5 +33,16 @@ public class PostService
 		
 		return PostResponse.builder().title(save.getTitle())
 				.content(save.getContent()).build();
+	}
+	
+	@Transactional
+	public PostResponse editPost(Long postId, PostEditRequest request)
+	{
+		Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("해당 Post는 존재하지 않습니다."));
+		
+		post.change(request.getTitle(), request.getContent());
+		
+		return PostResponse.builder().title(post.getTitle())
+				.content(post.getContent()).build();
 	}
 }

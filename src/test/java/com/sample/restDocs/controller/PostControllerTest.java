@@ -13,9 +13,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sample.restDocs.controller.request.PostCreateRequest;
+import com.sample.restDocs.controller.request.PostEditRequest;
 import com.sample.restDocs.repository.PostRepository;
+import com.sample.restDocs.service.PostService;
 import com.sample.restDocs.vo.Post;
 
 @AutoConfigureMockMvc // @SpringBootTest 를 사용하는 테스트에서 MockMvc를 사용하는 경우에 사용
@@ -27,6 +30,9 @@ class PostControllerTest
 	
 	@Autowired
 	private ObjectMapper objectMapper;
+	
+	@Autowired
+	private PostService postService;
 	
 	@Autowired
 	private PostRepository postRepository;
@@ -47,14 +53,14 @@ class PostControllerTest
 		// when
 		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/post")
 													   .contentType(MediaType.APPLICATION_JSON)
-													   .content(objectMapper.writeValueAsString(request)));
+													   .content(objectMapper.writeValueAsString(request)))
+										.andDo(MockMvcResultHandlers.print());
 		
 		// then
 		result.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.code").value("200"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.data.title").value("테스트 제목"))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.data.content").value("테스트 내용"))
-				.andDo(MockMvcResultHandlers.print());
+				.andExpect(MockMvcResultMatchers.jsonPath("$.data.content").value("테스트 내용"));
 	}
 	
 	
@@ -67,15 +73,38 @@ class PostControllerTest
 		Post response = postRepository.save(post);
 		
 		// when
-		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/post/{postId}", response.getId()));
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/post/{postId}", response.getId()))
+				.andDo(MockMvcResultHandlers.print());
 		
 		// then
 		result.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.code").value("200"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.data.title").value("테스트 제목"))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.data.content").value("테스트 내용"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.data.content").value("테스트 내용"));
+	}
+	
+	
+	@DisplayName("글 1개를 수정 후 해당 글 조회 테스트")
+	@Test
+	void update() throws Exception
+	{
+	    // given
+		Post post = Post.builder().title("테스트 제목").content("테스트 내용").build();
+		Post response = postRepository.save(post);
+
+		PostEditRequest editRequest = PostEditRequest.builder().title("테스트 제목 수정!").content("테스트 내용 수정!").build();
+		
+		// when
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/post/{postId}", response.getId())
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(editRequest)))
 				.andDo(MockMvcResultHandlers.print());
-	   
+		
+		// then
+		result.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.code").value("200"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.data.title").value("테스트 제목 수정!"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.data.content").value("테스트 내용 수정!"));
 	}
 	
 }
