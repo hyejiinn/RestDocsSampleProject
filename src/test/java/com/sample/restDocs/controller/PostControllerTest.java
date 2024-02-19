@@ -12,15 +12,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sample.restDocs.controller.request.PostCreateRequest;
 import com.sample.restDocs.repository.PostRepository;
-import com.sample.restDocs.service.PostService;
-import com.sample.restDocs.service.response.PostResponse;
 import com.sample.restDocs.vo.Post;
-
-import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureMockMvc
 @SpringBootTest
 class PostControllerTest
@@ -30,9 +25,6 @@ class PostControllerTest
 	
 	@Autowired
 	private ObjectMapper objectMapper;
-	
-	@Autowired
-	private PostService postService;
 	
 	@Autowired
 	private PostRepository postRepository;

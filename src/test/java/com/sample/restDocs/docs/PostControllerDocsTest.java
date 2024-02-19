@@ -1,4 +1,4 @@
-package com.sample.restDocs.controller;
+package com.sample.restDocs.docs;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,26 +28,11 @@ import com.sample.restDocs.vo.Post;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 
-@SpringBootTest
 @AutoConfigureMockMvc
-@ExtendWith(RestDocumentationExtension.class)
-public class PostControllerDocsTest
+public class PostControllerDocsTest extends RestDocsSupport
 {
-	
-	private MockMvc mockMvc;
-	
 	@Autowired
 	private PostRepository postRepository;
-	
-	@Autowired
-	private ObjectMapper objectMapper;
-	    @BeforeEach
-	    void setUp(WebApplicationContext webApplicationContext, RestDocumentationContextProvider restDocumentation) {
-	        // 자동주입이 아니라 테스트 전에 미리 mockMvc 세팅하는 작업
-	        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-	                .apply(documentationConfiguration(restDocumentation))
-	                .build();
-	    }
 	
 	@DisplayName("글 하나를 작성하면 정상적으로 저장된다.")
 	@Test
@@ -66,16 +51,14 @@ public class PostControllerDocsTest
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andDo(MockMvcRestDocumentation.document("post-write",
 														 PayloadDocumentation.responseFields(
-																 PayloadDocumentation.fieldWithPath("code").type(
-																		 JsonFieldType.NUMBER).description("응답 코드"),
+																 PayloadDocumentation.fieldWithPath("code").type(JsonFieldType.NUMBER).description("응답 코드"),
 																 PayloadDocumentation.fieldWithPath("status").type(JsonFieldType.STRING).description("응답 상태"),
 																 PayloadDocumentation.fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지"),
 																 PayloadDocumentation.fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
-																 
 																 PayloadDocumentation.fieldWithPath("data.title").description("post 제목"),
 																 PayloadDocumentation.fieldWithPath("data.content").description("post 내용")
 														 )
-														 ));
+				));
 		;
 	}
 	
@@ -95,19 +78,17 @@ public class PostControllerDocsTest
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andDo(MockMvcRestDocumentation.document("post-get",
 														 RequestDocumentation.pathParameters(
-														 	RequestDocumentation.parameterWithName("postId").description("post Id")
+																 RequestDocumentation.parameterWithName("postId").description("post Id")
 														 ),
-														 PayloadDocumentation.responseFields(
-																 PayloadDocumentation.fieldWithPath("code").type(
-																		 JsonFieldType.NUMBER).description("응답 코드"),
+														 PayloadDocumentation.responseFields(PayloadDocumentation.fieldWithPath("code").type(JsonFieldType.NUMBER).description("응답 코드"),
 																 PayloadDocumentation.fieldWithPath("status").type(JsonFieldType.STRING).description("응답 상태"),
 																 PayloadDocumentation.fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지"),
+																
 																 PayloadDocumentation.fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
-																 
 																 PayloadDocumentation.fieldWithPath("data.title").description("게시글 제목"),
 																 PayloadDocumentation.fieldWithPath("data.content").description("게시글 내용")
 														 )
-														 ));
+				));
 		
 	}
 }
