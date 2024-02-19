@@ -1,34 +1,22 @@
 package com.sample.restDocs.docs;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sample.restDocs.controller.request.PostCreateRequest;
 import com.sample.restDocs.repository.PostRepository;
 import com.sample.restDocs.vo.Post;
 
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-
-@AutoConfigureMockMvc
 public class PostControllerDocsTest extends RestDocsSupport
 {
 	@Autowired
@@ -42,14 +30,17 @@ public class PostControllerDocsTest extends RestDocsSupport
 		PostCreateRequest request = PostCreateRequest.builder().title("테스트 제목")
 				.content("테스트 내용").build();
 		
-		// when then
-		mockMvc.perform(RestDocumentationRequestBuilders.post("/api/v1/post")
-								.contentType(
-										MediaType.APPLICATION_JSON).content(
-								objectMapper.writeValueAsString(request)))
+		// when
+		ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.post("/api/v1/post")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request)));
+				
+		// then
+		result
 				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andDo(MockMvcRestDocumentation.document("post-write",
+				.andDo(MockMvcRestDocumentation.document("post-write", // REST Docs
+														 RestDocsUtils.getDocumentResponse(),
 														 PayloadDocumentation.responseFields(
 																 PayloadDocumentation.fieldWithPath("code").type(JsonFieldType.NUMBER).description("응답 코드"),
 																 PayloadDocumentation.fieldWithPath("status").type(JsonFieldType.STRING).description("응답 상태"),
@@ -70,13 +61,14 @@ public class PostControllerDocsTest extends RestDocsSupport
 		Post post = Post.builder().title("테스트 제목").content("테스트 내용").build();
 		Post response = postRepository.save(post);
 		
-		// when then
-		mockMvc.perform(
-						RestDocumentationRequestBuilders.get("/api/v1/post/{postId}",
-															 response.getId()))
-				.andDo(MockMvcResultHandlers.print())
+		// when
+		ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/post/{postId}", response.getId()));
+		
+		// then
+		result.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andDo(MockMvcRestDocumentation.document("post-get",
+														 RestDocsUtils.getDocumentResponse(),
 														 RequestDocumentation.pathParameters(
 																 RequestDocumentation.parameterWithName("postId").description("post Id")
 														 ),

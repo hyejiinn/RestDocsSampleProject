@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -16,7 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sample.restDocs.controller.request.PostCreateRequest;
 import com.sample.restDocs.repository.PostRepository;
 import com.sample.restDocs.vo.Post;
-@AutoConfigureMockMvc
+
+@AutoConfigureMockMvc // @SpringBootTest 를 사용하는 테스트에서 MockMvc를 사용하는 경우에 사용
 @SpringBootTest
 class PostControllerTest
 {
@@ -31,12 +33,10 @@ class PostControllerTest
 	
 	@BeforeEach
 	void clean() {
-		postRepository.deleteAll();
+		postRepository.deleteAll(); // 테스트 수행 후 데이터 클렌징
 	}
 	
-	
-	
-	@DisplayName("글 하나를 작성하면 정상적으로 저장된다.")
+	@DisplayName("글 작성 테스트")
 	@Test
 	void write() throws Exception
 	{
@@ -44,11 +44,13 @@ class PostControllerTest
 		PostCreateRequest request = PostCreateRequest.builder().title("테스트 제목")
 				.content("테스트 내용").build();
 		
-		// when then
-		mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/post").contentType(
-						MediaType.APPLICATION_JSON).content(
-						objectMapper.writeValueAsString(request)))
-				.andExpect(MockMvcResultMatchers.status().isOk())
+		// when
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/post")
+													   .contentType(MediaType.APPLICATION_JSON)
+													   .content(objectMapper.writeValueAsString(request)));
+		
+		// then
+		result.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.code").value("200"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.data.title").value("테스트 제목"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.data.content").value("테스트 내용"))
@@ -56,7 +58,7 @@ class PostControllerTest
 	}
 	
 	
-	@DisplayName("글 1개를 저장하고 조회하는 테스트")
+	@DisplayName("글 1개를 저장 후 해당 글 조회 테스트")
 	@Test
 	void get() throws Exception
 	{
@@ -64,9 +66,11 @@ class PostControllerTest
 		Post post = Post.builder().title("테스트 제목").content("테스트 내용").build();
 		Post response = postRepository.save(post);
 		
-		// when then
-		mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/post/{postId}", response.getId()))
-				.andExpect(MockMvcResultMatchers.status().isOk())
+		// when
+		ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/post/{postId}", response.getId()));
+		
+		// then
+		result.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.code").value("200"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.data.title").value("테스트 제목"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.data.content").value("테스트 내용"))
