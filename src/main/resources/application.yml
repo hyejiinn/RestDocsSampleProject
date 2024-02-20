@@ -15,10 +15,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html
-    display-request-duration: true
-  cache:
-    disabled: true
+    url: /swagger/open-api-3.0.1.json
+    path: /swagger
+#springdoc:
+#  swagger-ui:
+#    path: /swagger-ui.html
+#    display-request-duration: true
+#  cache:
+#    disabled: true

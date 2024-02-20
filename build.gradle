@@ -4,6 +4,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.4'
 
 	id "org.asciidoctor.jvm.convert" version "3.3.2" // Asciidoctor plugin 을 적용해야 함 (sciiDoc 문법으로 작성하면 Asciidoctor를 이용해서 html로 변환해준다.)
+	id "com.epages.restdocs-api-spec" version "0.17.1"
 }
 
 group = 'com.sample'
@@ -25,6 +26,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
@@ -34,8 +36,12 @@ dependencies {
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 
+	// RestDocs + Swagger
+	testImplementation("com.epages:restdocs-api-spec:0.17.1")
+	testImplementation("com.epages:restdocs-api-spec-mockmvc:0.17.1")
+
 	// springdoc 으로 하는 방법!! 오 이거 엄청 편리하다.
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+//	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
@@ -61,14 +67,33 @@ asciidoctor { // asciidoctor 작업을 구성
 	dependsOn test //  test 수행한 다음에 asciidoctor를 수행한다.
 }
 
+openapi3 {
+	servers = [
+			{ url = 'http://localhost:8080' },
+	]
+	title = 'spring-rest-docs-guide'
+	description = 'Spring REST Docs 테스트 생성물 생성시 추가생성되는 OpenAPI 문서이용'
+	version = "0.0.1"
+	outputFileNamePrefix='open-api-3.0.1'
+	format = 'json'
+//	format = 'yaml'
+	outputDirectory = 'build/resources/main/static/swagger'
+}
+
 bootJar {
 	dependsOn asciidoctor // test -> asciidoctor -> bootJar
+	finalizedBy "openapi3"
 
 	String activeProfile = System.properties['spring.profiles.active']
 	if(activeProfile != "real") {
 		copy {
 			from asciidoctor.outputDir
 			into 'src/main/resources/static/docs'
+		}
+
+		copy {
+			from openapi3.outputDirectory
+			into "src/main/resources/static/swagger"
 		}
 	}
 }

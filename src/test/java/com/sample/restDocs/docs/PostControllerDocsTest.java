@@ -16,6 +16,9 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper;
+import com.epages.restdocs.apispec.ResourceDocumentation;
+import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.sample.restDocs.controller.request.PostCreateRequest;
 import com.sample.restDocs.controller.request.PostEditRequest;
 import com.sample.restDocs.repository.PostRepository;
@@ -63,7 +66,21 @@ public class PostControllerDocsTest extends RestDocsSupport
 														 PayloadDocumentation.responseFields( // 응답 데이터 스펙
 																 defaultResponseFieldDescriptors
 														 )
-				));
+				))
+				.andDo(MockMvcRestDocumentationWrapper.document("post-v1-post-write", // OAS 3.0 - Swagger
+																RestDocsUtils.getDocumentRequest(),
+																RestDocsUtils.getDocumentResponse(),
+																ResourceDocumentation.resource(
+																		ResourceSnippetParameters.builder()
+																				.requestFields(
+																						PayloadDocumentation.fieldWithPath("title").description("post 제목").optional(),
+																						PayloadDocumentation.fieldWithPath("content").description("post 내용")
+																				)
+																				.responseFields(
+																						defaultResponseFieldDescriptors
+																				).build()
+																)
+																));
 		;
 	}
 	
@@ -84,7 +101,7 @@ public class PostControllerDocsTest extends RestDocsSupport
 		
 		// then
 		result.andExpect(MockMvcResultMatchers.status().isOk())
-				.andDo(MockMvcRestDocumentation.document("post-get",
+				.andDo(MockMvcRestDocumentation.document("post-get", // REST docs
 														 RestDocsUtils.getDocumentResponse(),
 														 RequestDocumentation.pathParameters(
 																 RequestDocumentation.parameterWithName("postId").description("post Id")
@@ -92,6 +109,19 @@ public class PostControllerDocsTest extends RestDocsSupport
 														 PayloadDocumentation.responseFields(
 																 defaultResponseFieldDescriptors
 														 )
+				))
+				.andDo(MockMvcRestDocumentationWrapper.document("post-v1-post-get", // OAS 3.0 - Swagger
+																RestDocsUtils.getDocumentRequest(),
+																RestDocsUtils.getDocumentResponse(),
+																ResourceDocumentation.resource(
+																		ResourceSnippetParameters.builder()
+																				.pathParameters(
+																						RequestDocumentation.parameterWithName("postId").description("post Id")
+																				)
+																				.responseFields(
+																						defaultResponseFieldDescriptors
+																				).build()
+																)
 				));
 		
 	}
@@ -118,7 +148,7 @@ public class PostControllerDocsTest extends RestDocsSupport
 		
 		// then
 		result.andExpect(MockMvcResultMatchers.status().isOk())
-				.andDo(MockMvcRestDocumentation.document("post-update",
+				.andDo(MockMvcRestDocumentation.document("post-update", // REST Docs
 														 RestDocsUtils.getDocumentRequest(),
 														 RestDocsUtils.getDocumentResponse(),
 														 RequestDocumentation.pathParameters(
@@ -131,6 +161,23 @@ public class PostControllerDocsTest extends RestDocsSupport
 														 PayloadDocumentation.responseFields(
 																 defaultResponseFieldDescriptors
 														 )
-														 ));
+														 ))
+				.andDo(MockMvcRestDocumentationWrapper.document("post-v1-post-update", // OAS 3.0 - Swagger
+																RestDocsUtils.getDocumentRequest(),
+																RestDocsUtils.getDocumentResponse(),
+																ResourceDocumentation.resource(
+																		ResourceSnippetParameters.builder()
+																				.pathParameters(
+																						RequestDocumentation.parameterWithName("postId").description("post Id")
+																				)
+																				.requestFields(
+																						PayloadDocumentation.fieldWithPath("title").type(JsonFieldType.STRING).description("post 제목").optional(),
+																						PayloadDocumentation.fieldWithPath("content").type(JsonFieldType.STRING).description("post 내용")
+																				)
+																				.responseFields(
+																						defaultResponseFieldDescriptors
+																				).build()
+																)
+				));
 	}
 }
