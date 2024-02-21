@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper;
 import com.epages.restdocs.apispec.ResourceDocumentation;
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
+import com.epages.restdocs.apispec.Schema;
 import com.sample.restDocs.controller.request.PostCreateRequest;
 import com.sample.restDocs.controller.request.PostEditRequest;
 import com.sample.restDocs.repository.PostRepository;
@@ -72,13 +73,17 @@ public class PostControllerDocsTest extends RestDocsSupport
 																RestDocsUtils.getDocumentResponse(),
 																ResourceDocumentation.resource(
 																		ResourceSnippetParameters.builder()
+																				.tag("Post API")
+																				.description("post 작성")
 																				.requestFields(
 																						PayloadDocumentation.fieldWithPath("title").description("post 제목").optional(),
 																						PayloadDocumentation.fieldWithPath("content").description("post 내용")
 																				)
 																				.responseFields(
 																						defaultResponseFieldDescriptors
-																				).build()
+																				)
+																				.responseSchema(Schema.schema("post-write-response"))
+																				.build()
 																)
 																));
 		;
@@ -101,7 +106,7 @@ public class PostControllerDocsTest extends RestDocsSupport
 		
 		// then
 		result.andExpect(MockMvcResultMatchers.status().isOk())
-				.andDo(MockMvcRestDocumentation.document("post-get", // REST docs
+				.andDo(MockMvcRestDocumentation.document("post-get", // REST docs 
 														 RestDocsUtils.getDocumentResponse(),
 														 RequestDocumentation.pathParameters(
 																 RequestDocumentation.parameterWithName("postId").description("post Id")
@@ -115,12 +120,16 @@ public class PostControllerDocsTest extends RestDocsSupport
 																RestDocsUtils.getDocumentResponse(),
 																ResourceDocumentation.resource(
 																		ResourceSnippetParameters.builder()
+																				.tag("Post API")
+																				.description("post 조회")
 																				.pathParameters(
 																						RequestDocumentation.parameterWithName("postId").description("post Id")
 																				)
 																				.responseFields(
 																						defaultResponseFieldDescriptors
-																				).build()
+																				)
+																				.responseSchema(Schema.schema("post-get-response"))
+																				.build()
 																)
 				));
 		
@@ -162,11 +171,13 @@ public class PostControllerDocsTest extends RestDocsSupport
 																 defaultResponseFieldDescriptors
 														 )
 														 ))
-				.andDo(MockMvcRestDocumentationWrapper.document("post-v1-post-update", // OAS 3.0 - Swagger
+				.andDo(MockMvcRestDocumentationWrapper.document("post-v1-post-update",  // OAS 3.0 - Swagger
 																RestDocsUtils.getDocumentRequest(),
 																RestDocsUtils.getDocumentResponse(),
 																ResourceDocumentation.resource(
 																		ResourceSnippetParameters.builder()
+																				.tag("Post API")
+																				.description("post 수정")
 																				.pathParameters(
 																						RequestDocumentation.parameterWithName("postId").description("post Id")
 																				)
@@ -176,7 +187,9 @@ public class PostControllerDocsTest extends RestDocsSupport
 																				)
 																				.responseFields(
 																						defaultResponseFieldDescriptors
-																				).build()
+																				)
+																				.responseSchema(Schema.schema("post-update-response"))
+																				.build()
 																)
 				));
 	}
