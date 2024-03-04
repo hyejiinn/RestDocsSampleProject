@@ -98,13 +98,11 @@ openapi3 {
 //	}
 //}
 
-build {
-	// finalizedBy : 특정 태스크 이후 동작 -> build 폴더 생성 후 asciidoctor, openapi3 실행
-	finalizedBy "asciidoctor"
-	finalizedBy "openapi3"
-
+tasks.register('copyDocs') {
+	dependsOn asciidoctor // test -> asciidoctor -> bootJar
+	dependsOn "openapi3"
 	String activeProfile = System.properties['spring.profiles.active']
-	if(activeProfile != "real") {
+	if (activeProfile != "real") {
 		copy {
 			from asciidoctor.outputDir
 			into 'src/main/resources/static/docs'
@@ -116,4 +114,27 @@ build {
 		}
 	}
 }
+
+build {
+	finalizedBy 'copyDocs'
+}
+
+//build {
+//	// finalizedBy : 특정 태스크 이후 동작 -> build 폴더 생성 후 asciidoctor, openapi3 실행
+//	finalizedBy "asciidoctor"
+//	finalizedBy "openapi3"
+//
+//	String activeProfile = System.properties['spring.profiles.active']
+//	if(activeProfile != "real") {
+//		copy {
+//			from asciidoctor.outputDir
+//			into 'src/main/resources/static/docs'
+//		}
+//
+//		copy {
+//			from openapi3.outputDirectory
+//			into "src/main/resources/static/swagger"
+//		}
+//	}
+//}
 

@@ -33,6 +33,7 @@ public class PostService
 		
 		return PostResponse.builder().title(save.getTitle())
 				.content(save.getContent()).build();
+//		return new PostResponse();
 	}
 	
 	@Transactional

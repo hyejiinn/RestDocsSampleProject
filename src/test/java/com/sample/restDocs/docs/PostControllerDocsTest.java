@@ -4,7 +4,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentMatchers;
+import org.mockito.BDDMockito;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
@@ -16,19 +21,20 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper;
-import com.epages.restdocs.apispec.ResourceDocumentation;
-import com.epages.restdocs.apispec.ResourceSnippetParameters;
-import com.epages.restdocs.apispec.Schema;
 import com.sample.restDocs.controller.request.PostCreateRequest;
 import com.sample.restDocs.controller.request.PostEditRequest;
 import com.sample.restDocs.repository.PostRepository;
+import com.sample.restDocs.service.PostService;
+import com.sample.restDocs.service.response.PostResponse;
 import com.sample.restDocs.vo.Post;
 
 public class PostControllerDocsTest extends RestDocsSupport
 {
 	@Autowired
 	private PostRepository postRepository;
+	
+	@MockBean
+	private PostService postService;
 	
 	protected List<FieldDescriptor> defaultResponseFieldDescriptors = new java.util.ArrayList<>(
 			List.of(
@@ -49,6 +55,15 @@ public class PostControllerDocsTest extends RestDocsSupport
 		defaultResponseFieldDescriptors.add(PayloadDocumentation.fieldWithPath("data.title").description("post 제목"));
 		defaultResponseFieldDescriptors.add(PayloadDocumentation.fieldWithPath("data.content").description("post 내용"));
 		
+		BDDMockito.given(
+						postService.writePost(BDDMockito.any(PostCreateRequest.class)))
+				.willReturn(
+						PostResponse.builder()
+								.title("테스트 제목")
+								.content("테스트 내용")
+								.build()
+				);
+		
 		// when
 		ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.post("/api/v1/post")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -67,25 +82,7 @@ public class PostControllerDocsTest extends RestDocsSupport
 														 PayloadDocumentation.responseFields( // 응답 데이터 스펙
 																 defaultResponseFieldDescriptors
 														 )
-				))
-				.andDo(MockMvcRestDocumentationWrapper.document("post-v1-post-write", // OAS 3.0 - Swagger
-																RestDocsUtils.getDocumentRequest(),
-																RestDocsUtils.getDocumentResponse(),
-																ResourceDocumentation.resource(
-																		ResourceSnippetParameters.builder()
-																				.tag("Post API")
-																				.description("post 작성")
-																				.requestFields(
-																						PayloadDocumentation.fieldWithPath("title").description("post 제목").optional(),
-																						PayloadDocumentation.fieldWithPath("content").description("post 내용")
-																				)
-																				.responseFields(
-																						defaultResponseFieldDescriptors
-																				)
-																				.responseSchema(Schema.schema("post-write-response"))
-																				.build()
-																)
-																));
+				));
 		;
 	}
 	
@@ -94,19 +91,23 @@ public class PostControllerDocsTest extends RestDocsSupport
 	void get() throws Exception
 	{
 		// given
-		Post post = Post.builder().title("테스트 제목").content("테스트 내용").build();
-		Post response = postRepository.save(post);
-		
 		defaultResponseFieldDescriptors.add(PayloadDocumentation.fieldWithPath("data.title").description("post 제목"));
 		defaultResponseFieldDescriptors.add(PayloadDocumentation.fieldWithPath("data.content").description("post 내용"));
 		
+		BDDMockito.given(postService.getPost(BDDMockito.anyLong())).willReturn(
+				PostResponse.builder()
+						.title("테스트 제목222")
+						.content("테스트 내용")
+						.build()
+		);
+		
 		// when
-		ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/post/{postId}", response.getId()))
+		ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/post/{postId}", BDDMockito.anyLong()))
 										.andDo(MockMvcResultHandlers.print());
 		
 		// then
 		result.andExpect(MockMvcResultMatchers.status().isOk())
-				.andDo(MockMvcRestDocumentation.document("post-get", // REST docs 
+				.andDo(MockMvcRestDocumentation.document("post-get", // REST docs
 														 RestDocsUtils.getDocumentResponse(),
 														 RequestDocumentation.pathParameters(
 																 RequestDocumentation.parameterWithName("postId").description("post Id")
@@ -114,23 +115,6 @@ public class PostControllerDocsTest extends RestDocsSupport
 														 PayloadDocumentation.responseFields(
 																 defaultResponseFieldDescriptors
 														 )
-				))
-				.andDo(MockMvcRestDocumentationWrapper.document("post-v1-post-get", // OAS 3.0 - Swagger
-																RestDocsUtils.getDocumentRequest(),
-																RestDocsUtils.getDocumentResponse(),
-																ResourceDocumentation.resource(
-																		ResourceSnippetParameters.builder()
-																				.tag("Post API")
-																				.description("post 조회")
-																				.pathParameters(
-																						RequestDocumentation.parameterWithName("postId").description("post Id")
-																				)
-																				.responseFields(
-																						defaultResponseFieldDescriptors
-																				)
-																				.responseSchema(Schema.schema("post-get-response"))
-																				.build()
-																)
 				));
 		
 	}
@@ -140,17 +124,22 @@ public class PostControllerDocsTest extends RestDocsSupport
 	void update() throws Exception
 	{
 		// given
-		Post post = Post.builder().title("테스트 제목").content("테스트 내용").build();
-		Post response = postRepository.save(post);
-		
 		PostEditRequest editRequest = PostEditRequest.builder().title("테스트 제목 수정!").content("테스트 내용 수정!").build();
 		
 		defaultResponseFieldDescriptors.add(PayloadDocumentation.fieldWithPath("data.title").description("post 제목"));
 		defaultResponseFieldDescriptors.add(PayloadDocumentation.fieldWithPath("data.content").description("post 내용"));
+		long anyLong = BDDMockito.anyLong();
+		BDDMockito.given(postService.editPost(anyLong, BDDMockito.any(PostEditRequest.class)))
+				.willReturn(
+						PostResponse.builder()
+								.title("테스트 제목 수정!")
+								.content("테스트 내용 수정!")
+								.build()
+				);
 		
 		// when
 		ResultActions result = mockMvc.perform(
-						RestDocumentationRequestBuilders.post("/api/v1/post/{postId}", response.getId())
+						RestDocumentationRequestBuilders.post("/api/v1/post/{postId}", anyLong)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(editRequest)))
 				.andDo(MockMvcResultHandlers.print());
@@ -170,27 +159,6 @@ public class PostControllerDocsTest extends RestDocsSupport
 														 PayloadDocumentation.responseFields(
 																 defaultResponseFieldDescriptors
 														 )
-														 ))
-				.andDo(MockMvcRestDocumentationWrapper.document("post-v1-post-update",  // OAS 3.0 - Swagger
-																RestDocsUtils.getDocumentRequest(),
-																RestDocsUtils.getDocumentResponse(),
-																ResourceDocumentation.resource(
-																		ResourceSnippetParameters.builder()
-																				.tag("Post API")
-																				.description("post 수정")
-																				.pathParameters(
-																						RequestDocumentation.parameterWithName("postId").description("post Id")
-																				)
-																				.requestFields(
-																						PayloadDocumentation.fieldWithPath("title").type(JsonFieldType.STRING).description("post 제목").optional(),
-																						PayloadDocumentation.fieldWithPath("content").type(JsonFieldType.STRING).description("post 내용")
-																				)
-																				.responseFields(
-																						defaultResponseFieldDescriptors
-																				)
-																				.responseSchema(Schema.schema("post-update-response"))
-																				.build()
-																)
-				));
+														 ));
 	}
 }
